@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Market Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+    :root {
+        --primary: #0097FB;
+        --foreground: #0f172a;
+        --muted: #F8F9FA;
+        --card-bg: #ffffff;
+        --accent: #C8102E;
+        --border: #ddd;
+        --nav-bg: #ffffff;
+        --table-even: #f8f9fa;
+        --hover-bg: #f0f2f5;
+    }
+
+    [data-theme="dark"] {
+        --foreground: #e2e8f0;
+        --muted: #1e293b;
+        --card-bg: #334155;
+        --border: #475569;
+        --nav-bg: #1e293b;
+        --table-even: #475569;
+        --accent: #dc2626;
+        --hover-bg: #475569;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--muted);
+        color: var(--foreground);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    nav {
+        position: sticky;
+        top: 0;
+        background-color: var(--nav-bg);
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease;
+    }
+
+    .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 4rem;
+    }
+
+    .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--foreground);
+        transition: color 0.3s ease;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--foreground);
+        font-weight: 500;
+        text-decoration: none;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.2s, color 0.3s ease;
+    }
+
+    .nav-link:hover {
+        background-color: var(--muted);
+    }
+
+    .nav-link.active {
+        color: var(--primary);
+        background-color: rgba(0, 151, 251, 0.1);
+    }
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .user-avatar {
+        height: 40px;
+        width: 40px;
+        background-color: var(--primary);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: opacity 0.2s;
+    }
+
+    .user-avatar:hover {
+        opacity: 0.8;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background-color: var(--card-bg);
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+        border-radius: 0.25rem;
+        overflow: hidden;
+        margin-top: 0;
+        transition: background-color 0.3s ease;
+    }
+
+    .dropdown-content a {
+        color: var(--foreground);
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        transition: background-color 0.2s, color 0.3s ease;
+    }
+
+    .dropdown-content a:hover {
+        background-color: var(--muted);
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .dashboard {
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px;
+    }
+
+    .card {
+        background-color: var(--card-bg);
+        padding: 2rem;
+        margin: 1rem 0;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease;
+    }
+
+    .card h1 {
+        margin-bottom: 1.5rem;
+        font-size: 1.75rem;
+        color: var(--accent);
+        text-align: center;
+        transition: color 0.3s ease;
+    }
+
+    .card h2 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        color: var(--foreground);
+        font-size: 1.5rem;
+        transition: color 0.3s ease;
+    }
+
+    .card h3 {
+        color: var(--foreground);
+        opacity: 0.8;
+        font-weight: normal;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        transition: color 0.3s ease;
+    }
+
+    .card p {
+        margin: 0.5rem 0;
+        color: var(--foreground);
+        transition: color 0.3s ease;
+    }
+
+    form {
+        margin-top: 1rem;
+    }
+
+    form button {
+        width: 100%;
+    }
+
+    button {
+        padding: 0.75rem 1.5rem;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #007ad6;
+    }
+
+    button.primary {
+        background-color: var(--primary);
+    }
+
+    button.add {
+        background-color: green;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    button.remove {
+        background-color: red;
+        color: white;
+        padding: 5px 10px;
+    }
+
+    #cards {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    li {
+        padding: 10px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s, border-color 0.3s ease;
+    }
+
+    li:hover {
+        background-color: var(--hover-bg);
+    }
+
+    li button {
+        display: none;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+    }
+
+    li:hover button {
+        display: inline-block;
+    }
+
+    #stock-info {
+        font-size: 1.2em;
+        color: var(--foreground);
+        transition: color 0.3s ease;
+    }
+
+    #stock-table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: var(--card-bg);
+        transition: background-color 0.3s ease;
+    }
+
+    #stock-table th, #stock-table td {
+        border: 1px solid var(--border);
+        padding: 10px;
+        text-align: left;
+        color: var(--foreground);
+        transition: border-color 0.3s ease, color 0.3s ease, background-color 0.3s ease;
+    }
+
+    #stock-table tr:hover {
+        background-color: var(--hover-bg);
+    }
+
+    #stock-table th {
+        background-color: var(--muted);
+        font-weight: 600;
+    }
+
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td, th {
+        border: 1px solid var(--border);
+        text-align: left;
+        padding: 8px;
+        transition: border-color 0.3s ease;
+    }
+
+    tr:nth-child(even) {
+        background-color: var(--table-even);
+    }
+
+    .positive {
+        color: green;
+    }
+
+    .negative {
+        color: red;
+    }
+
+    .actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    .box {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 1rem;
+    }
+
+    .search-bar {
+        max-width: 1000px;
+        margin: 0 auto 1.5rem;
+        padding: 0 1rem;
+    }
+
+    #searchInput {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        background-color: var(--card-bg);
+        color: var(--foreground);
+        transition: all 0.3s ease;
+    }
+
+    #searchInput:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 151, 251, 0.1);
+    }
+
+    #searchInput::placeholder {
+        color: var(--foreground);
+        opacity: 0.5;
+    }
+</style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-container">
+      <h1 class="logo">Trade Craft - Stock Exchange Simulator</h1>
+      <div class="nav-links">
+        <a href="/trading" class="nav-link"><i class="fas fa-chart-line"></i> Trade</a>
+        <a href="/Portfolio" class="nav-link"><i class="fas fa-wallet"></i> Portfolio</a>
+        <a href="/News" class="nav-link"><i class="fas fa-newspaper"></i> News</a>
+        <a href="/research" class="nav-link active"><i class="fas fa-lightbulb"></i> Research</a>
+        <a href="/rules" class="nav-link"><i class="fa fa-gavel"></i> Rules</a>
+        <div class="dropdown">
+            <div class="user-avatar" title="User Profile">
+                <i class="fa fa-user"></i>
+            </div>
+            <div class="dropdown-content">
+                <a href="/profile"><i class="fa fa-user-circle"></i> My Profile</a>
+                <a href="/settings"><i class="fa fa-cog"></i> Settings</a>
+                <a href="/logout"><i class="fa fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+      </div>
+    </div>
+</nav>
+
+<div class="card">
+  <h1>Research</h1>
+</div>
+
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="🔍 Search stocks by symbol, name, or sector...">
+</div>
+
+<div id="cards" class="grid three">
+  {% for c in companies %}
+    <div class="card">
+      <h2>{{ c.symbol }} — {{ c.name }}</h2>
+      <h3>{{ c.sector }}</h3>
+      <p>Live quote: <span id="q_{{ c.symbol }}">{{ '%.2f'|format(c.live_price) if c.live_price else 'N/A' }}</span></p>
+
+      <form method="post" action="{{ url_for('trade') }}">
+        <input type="hidden" name="symbol" value="{{ c.symbol }}">
+        <input type="hidden" name="qty" value="1">
+        <input type="hidden" name="side" value="BUY">
+        <button class="primary">Buy 1 share</button>
+      </form>
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+// Theme detection and application
+function getTheme() {
+    try {
+        return localStorage.getItem('theme') || 'light';
+    } catch (e) {
+        return 'light';
+    }
+}
+
+// Apply theme on page load
+const currentTheme = getTheme();
+if (currentTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+}
+
+const previousPrices = {}; // to track previous prices for optional coloring
+let updateInterval = null;
+let rateLimitErrorCount = 0;
+let isUpdating = false;
+
+async function updateQuotes() {
+    // Prevent multiple simultaneous updates
+    if (isUpdating) {
+        console.log("Update already in progress, skipping...");
+        return;
+    }
+
+    // If we've hit rate limits multiple times, stop updating
+    if (rateLimitErrorCount >= 3) {
+        console.log("Rate limit hit too many times, stopping automatic updates");
+        if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
+        return;
+    }
+
+    // Get all elements whose id starts with 'q_'
+    const symbolElements = document.querySelectorAll('[id^="q_"]');
+    if (symbolElements.length === 0) return;
+
+    isUpdating = true;
+
+    // Build comma-separated symbol list
+    const symbols = Array.from(symbolElements).map(el => el.id.replace('q_', '')).join(',');
+
+    try {
+        const res = await fetch(`/api/quote?symbols=${symbols}`);
+
+        if (!res.ok) {
+            if (res.status === 429) {
+                rateLimitErrorCount++;
+                console.warn(`Rate limit hit (${rateLimitErrorCount}/3). Reducing update frequency.`);
+                // Slow down updates if rate limited
+                if (updateInterval) {
+                    clearInterval(updateInterval);
+                    updateInterval = setInterval(updateQuotes, 30000); // Update every 30 seconds instead
+                }
+            }
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // Reset rate limit counter on success
+        rateLimitErrorCount = 0;
+
+        // Update each element
+        symbolElements.forEach(el => {
+            const symbol = el.id.replace('q_', '');
+            if (data.quotes[symbol] && data.quotes[symbol].price != null) {
+                const price = parseFloat(data.quotes[symbol].price).toFixed(2);
+
+                // Optional: track previous price for color change
+                const prev = previousPrices[symbol] || parseFloat(el.innerText.replace('$','')) || 0;
+                if (price > prev) {
+                    el.style.color = 'green';
+                } else if (price < prev) {
+                    el.style.color = 'red';
+                } else {
+                    // Use theme-aware default color
+                    const theme = getTheme();
+                    el.style.color = theme === 'dark' ? '#e2e8f0' : '#0f172a';
+                }
+
+                el.innerText = `$${price}`;
+                previousPrices[symbol] = parseFloat(price);
+            }
+        });
+
+    } catch (err) {
+        console.error("Failed to update quotes:", err);
+    } finally {
+        isUpdating = false;
+    }
+}
+
+// Don't auto-update on page load - let the backend provide initial prices
+// This reduces API calls significantly
+// updateQuotes();
+
+// Update every 30 seconds instead of 5 (reduces API calls by 83%)
+// Users can refresh the page if they need more current prices
+updateInterval = setInterval(updateQuotes, 30000);
+
+// Search/Filter functionality
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    const cards = document.querySelectorAll('#cards > .card');
+
+    cards.forEach(card => {
+        const symbol = card.querySelector('h2')?.textContent.toLowerCase() || '';
+        const sector = card.querySelector('h3')?.textContent.toLowerCase() || '';
+
+        // Check if search term matches symbol, name, or sector
+        if (symbol.includes(searchTerm) || sector.includes(searchTerm)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+</script>
+
+</body>
+</html>

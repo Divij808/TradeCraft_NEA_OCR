@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rules</title>
+
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+  <!-- Global CSS -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: #f8f9fa;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Rules section fills remaining screen */
+    .rules-page {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .rules-page img {
+      width: 100vw;
+      height: 100%;
+      object-fit: contain; /* FULL image always visible */
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- Navigation -->
+<nav>
+  <div class="nav-container">
+    <h1 class="logo">Trade Craft - Stock Exchange Simulator</h1>
+    <div class="nav-links">
+      <a href="/trading" class="nav-link"><i class="fas fa-chart-line"></i> Trade</a>
+      <a href="/Portfolio" class="nav-link"><i class="fas fa-wallet"></i> Portfolio</a>
+      <a href="/News" class="nav-link"><i class="fas fa-newspaper"></i> News</a>
+      <a href="/research" class="nav-link"><i class="fas fa-lightbulb"></i> Research</a>
+      <a href="/rules" class="nav-link"><i class="fa fa-gavel"></i> Rules</a>
+      <a href="/logout" class="nav-link"><i class="fa fa-sign-out"></i> Logout</a>
+    </div>
+  </div>
+</nav>
+
+<!-- FULL SCREEN IMAGE -->
+<div class="rules-page">
+  <img src="{{ url_for('static', filename='rules.png') }}" alt="Game Rules">
+</div>
+
+</body>
+</html>
