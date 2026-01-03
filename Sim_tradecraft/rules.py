@@ -1,0 +1,3 @@
+
+
+print(msft_image)

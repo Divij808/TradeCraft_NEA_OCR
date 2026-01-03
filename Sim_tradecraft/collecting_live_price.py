@@ -91,7 +91,7 @@ def update_live_prices_in_json(json_file='Companies.json', output_file='Companie
         print("No companies loaded")
         return
 
-    print(f"Updating prices for {len(companies)} companies...")
+
 
     for company in companies:
         symbol = company['symbol']
@@ -133,7 +133,7 @@ def get_live_price(company_name):
     for stock in stocks:
         name = normalize(stock["name"])
         symbol = normalize(stock["symbol"])
-        live_price = stock["live_price"]
+
 
         if query in name or query == symbol:
             return {

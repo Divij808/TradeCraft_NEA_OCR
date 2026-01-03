@@ -1,170 +1,170 @@
 [
   {
     "symbol": "AMZN",
-    "live_price": 231.06,
+    "live_price": 226.5,
     "name": "Amazon.com, Inc.",
-    "image": "https://logo.clearbit.com/amazon.com"
+    "image": "https://icons.duckduckgo.com/ip3/amazon.com.ico"
   },
   {
     "symbol": "NFLX",
-    "live_price": 93.49,
     "name": "Netflix, Inc.",
-    "image": "https://logo.clearbit.com/NETFLIX.com"
+    "image": "https://icons.duckduckgo.com/ip3/netflix.com.ico",
+    "live_price": 90.99
   },
   {
     "symbol": "CVX",
-    "live_price": 150.36,
+    "live_price": 155.9,
     "name": "Chevron Corporation",
-    "image": "https://logo.clearbit.com/chevron.com"
+    "image": "https://icons.duckduckgo.com/ip3/chevron.com.ico"
   },
   {
     "symbol": "XOM",
-    "live_price": 118.94,
+    "live_price": 122.65,
     "name": "Exxon Mobil Corporation",
-    "image": "https://logo.clearbit.com/exxonmobil.com"
+    "image": "https://icons.duckduckgo.com/ip3/exxonmobil.com.ico"
   },
   {
     "symbol": "PFE",
-    "live_price": 25.14,
+    "live_price": 25.18,
     "name": "Pfizer Inc.",
     "base_price": 25.89,
-    "image": "https://logo.clearbit.com/pfizer.com"
+    "image": "https://icons.duckduckgo.com/ip3/pfizer.com.ico"
   },
   {
     "symbol": "HD",
-    "live_price": 344.58,
+    "live_price": 345.82,
     "name": "Home Depot, Inc.",
-    "image": "https://logo.clearbit.com/homedepot.com"
+    "image": "https://icons.duckduckgo.com/ip3/homedepot.com.ico"
   },
   {
     "symbol": "TR",
-    "live_price": 37.47,
+    "live_price": 35.41,
     "name": "Tootsie Roll Industries, Inc.",
-    "image": "https://logo.clearbit.com/tootsie.com"
+    "image": "https://icons.duckduckgo.com/ip3/tootsie.com.ico"
   },
   {
     "symbol": "KHC",
-    "live_price": 23.78,
+    "live_price": 24.39,
     "name": "The Kraft Heinz Company",
-    "image": "https://logo.clearbit.com/kraftheinzcompany.com"
+    "image": "https://icons.duckduckgo.com/ip3/kraftheinzcompany.com.ico"
   },
   {
     "symbol": "JNJ",
-    "live_price": 206.21,
+    "live_price": 207.35,
     "name": "Johnson & Johnson",
     "base_price": 100.63,
-    "image": "https://logo.clearbit.com/jnj.com"
+    "image": "https://icons.duckduckgo.com/ip3/jnj.com.ico"
   },
   {
     "symbol": "GM",
-    "live_price": 82.95,
+    "live_price": 80.98,
     "name": "General Motors Company",
     "base_price": 31.47,
-    "image": "https://logo.clearbit.com/gm.com"
+    "image": "https://icons.duckduckgo.com/ip3/gm.com.ico"
   },
   {
     "symbol": "NKE",
-    "live_price": 57.38,
+    "live_price": 63.28,
     "name": "Nike, Inc.",
     "base_price": 50.94,
-    "image": "https://logo.clearbit.com/nike.com"
+    "image": "https://icons.duckduckgo.com/ip3/nike.com.ico"
   },
   {
     "symbol": "DIS",
-    "live_price": 112.25,
+    "live_price": 111.85,
     "name": "The Walt Disney Company",
     "base_price": 104.34,
-    "image": "https://logo.clearbit.com/disney.com"
+    "image": "https://icons.duckduckgo.com/ip3/disney.com.ico"
   },
   {
     "symbol": "UAA",
-    "live_price": 4.53,
+    "live_price": 5.29,
     "name": "Under Armour, Inc.",
     "base_price": 30.47,
-    "image": "https://logo.clearbit.com/underarmour.com"
+    "image": "https://icons.duckduckgo.com/ip3/underarmour.com.ico"
   },
   {
     "symbol": "CMG",
-    "live_price": 37.36,
+    "live_price": 37.49,
     "name": "Chipotle Mexican Grill, Inc.",
     "base_price": 398.44,
-    "image": "https://logo.clearbit.com/chipotle.com"
+    "image": "https://icons.duckduckgo.com/ip3/chipotle.com.ico"
   },
   {
     "symbol": "SBUX",
-    "live_price": 84.03,
+    "live_price": 83.97,
     "name": "Starbucks Corp",
     "base_price": 51.23,
-    "image": "https://logo.clearbit.com/starbucks.com"
+    "image": "https://icons.duckduckgo.com/ip3/starbucks.com.ico"
   },
   {
     "symbol": "MCD",
-    "live_price": 313.26,
+    "live_price": 303.26,
     "name": "McDonald's Corporation",
     "base_price": 105.73,
-    "image": "https://logo.clearbit.com/mcdonalds.com"
+    "image": "https://icons.duckduckgo.com/ip3/mcdonalds.com.ico"
   },
   {
     "symbol": "F",
-    "live_price": 13.36,
+    "live_price": 13.34,
     "name": "Ford Motor Company",
     "base_price": 10.22,
-    "image": "https://logo.clearbit.com/ford.com"
+    "image": "https://icons.duckduckgo.com/ip3/ford.com.ico"
   },
   {
     "symbol": "TSLA",
-    "live_price": 488.29,
+    "live_price": 438.07,
     "name": "Tesla, Inc.",
     "base_price": 250.0,
-    "image": "https://logo.clearbit.com/tesla.com"
+    "image": "https://icons.duckduckgo.com/ip3/tesla.com.ico"
   },
   {
     "symbol": "META",
-    "live_price": 663.77,
+    "live_price": 650.41,
     "name": "Facebook, Inc.",
     "base_price": 300.0,
-    "image": "https://logo.clearbit.com/meta.com"
+    "image": "https://icons.duckduckgo.com/ip3/meta.com.ico"
   },
   {
     "symbol": "RR.L",
-    "live_price": 1162.09,
+    "live_price": 1197.0,
     "name": "Rolls-Royce Holdings",
     "base_price": 2.0,
-    "image": "https://logo.clearbit.com/rolls-royce.com"
+    "image": "https://icons.duckduckgo.com/ip3/rolls-royce.com.ico"
   },
   {
     "symbol": "005930.KQ",
-    "live_price": 180.0,
+    "live_price": 128500.0,
     "name": "Samsung Electronics",
     "base_price": 60.0,
-    "image": "https://logo.clearbit.com/samsung.com"
+    "image": "https://icons.duckduckgo.com/ip3/samsung.com.ico"
   },
   {
     "symbol": "AAPL",
-    "live_price": 271.81,
+    "live_price": 271.01,
     "name": "Apple Inc.",
     "base_price": 180.0,
-    "image": "https://logo.clearbit.com/apple.com"
+    "image": "https://icons.duckduckgo.com/ip3/apple.com.ico"
   },
   {
     "symbol": "MSFT",
-    "live_price": 485.85,
+    "live_price": 472.94,
     "name": "Microsoft Corporation",
     "base_price": 330.0,
-    "image": "https://logo.clearbit.com/microsoft.com"
+    "image": "https://icons.duckduckgo.com/ip3/microsoft.com.ico"
   },
   {
     "symbol": "NVDA",
-    "live_price": 186.37,
+    "live_price": 188.85,
     "name": "NVIDIA Corporation",
     "base_price": 450.0,
-    "image": "https://logo.clearbit.com/nvidia.com"
+    "image": "https://icons.duckduckgo.com/ip3/nvidia.com.ico"
   },
   {
     "symbol": "GOOGL",
-    "live_price": 314.42,
+    "live_price": 315.15,
     "name": "Google LLC",
     "base_price": 130.0,
-    "image": "https://logo.clearbit.com/google.com"
+    "image": "https://icons.duckduckgo.com/ip3/google.com.ico"
   }
 ]

@@ -1,9 +1,7 @@
 import json
 import os
-import random
 import re
-import time
-from string import (punctuation, whitespace, digits, ascii_lowercase, ascii_uppercase)
+from string import (digits, ascii_lowercase, ascii_uppercase)
 
 base_directory = os.path.dirname(os.path.abspath(__file__))
 
@@ -42,32 +40,50 @@ for c in raw_companies:
 def list_companies():
     return list(COMPANIES.values())
 
+def company_image(symbol):
+    with open("Companies.json", "r") as f:
+        companies = json.load(f)
+
+    image = next(
+        (c["image"] for c in companies if c["symbol"] == symbol),
+        None
+    )
+    return image
+
+
 def validate_email(email):
     """Validate email format"""
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
+
 def validate_password(password):
-    errors = []
-    # Validate strong password
+    """
+    Validate password strength.
+    Returns True if valid, False if invalid.
+    """
     password = password.strip()
     password_length = len(password)
-    if password_length > 8 or password_length < 20:
-        errors.append('Invalid Password length. Must be between 8 and 20 characters.')
 
+    # Check length (between 8 and 20 characters)
+    if password_length < 8 or password_length > 20:
+        return False
+
+    # Check for at least one valid symbol
     validated_chars = {'-', '_', '.', '!', '@', '#', '$', '^', '&', '(', ')'}
     if not any(character in validated_chars for character in password):
-        errors.append('Password must contain at least one valid symbol: ' + ''.join(validated_chars))
+        return False
 
+    # Check for at least one digit
     if not any(character in digits for character in password):
-        errors.append('Password must contain at least one digit.')
+        return False
 
+    # Check for at least one lowercase letter
     if not any(character in ascii_lowercase for character in password):
-        errors.append('Password must contain at least one lowercase letter.')
+        return False
 
+    # Check for at least one uppercase letter
     if not any(char in ascii_uppercase for char in password):
-        errors.append('Password must contain at least one uppercase letter.')
+        return False
 
-    return errors
-
-
+    return True

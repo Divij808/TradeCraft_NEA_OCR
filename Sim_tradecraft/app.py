@@ -2,7 +2,7 @@
 # Imports
 import datetime
 import sqlite3
-from models import list_companies, COMPANIES, validate_password, validate_email
+from models import list_companies, COMPANIES, validate_password, validate_email, company_image
 from collecting_live_price import update_live_prices_in_json,live_price
 
 from flask import Flask, render_template, session, redirect, url_for, jsonify
@@ -487,10 +487,9 @@ def get_news():
 
         # Fetch live price for the stock
         article["live_price"] = live_price(article["symbol"])
-
-        # Simple logo (Yahoo-style)
+        # fetching and dispalying the logo of the stock
         article["logo"] = (
-            f"https://logo.clearbit.com/{article['symbol'].lower()}.com"
+            company_image(article["symbol"])
         )
 
     return jsonify({"news": news})
