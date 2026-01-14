@@ -88,24 +88,8 @@ Stock news is loaded using RSS feeds
 
 If an invalid stock symbol is entered, the system handles it safely without crashing
 
-8️⃣ Running Tests (Optional but Recommended)
 
-To run the test files:
-
-python -m pytest
-
-
-This checks:
-
-Live price API functionality
-
-Input validation
-
-System robustness
-
-Successful tests confirm the system works as expected.
-
-9️⃣ Troubleshooting
+8️⃣ Troubleshooting
 
 Problem: Module not found
 Fix: Re-run pip install commands
