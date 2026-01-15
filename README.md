@@ -1,4 +1,4 @@
-TradeCraft
+TradeCraft 
 
 📘 TradeCraft – Setup & Installation Guide
 
