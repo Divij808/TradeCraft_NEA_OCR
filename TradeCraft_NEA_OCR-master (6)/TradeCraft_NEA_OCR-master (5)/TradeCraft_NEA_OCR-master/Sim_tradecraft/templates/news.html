@@ -1,0 +1,1002 @@
+{% extends "layout.html" %}
+{% block title %}Live Stock News - TradeCraft{% endblock %}
+
+{% set active_page = 'news' %}
+
+{% block head %}
+<style>
+    .news-page-container {
+        max-width: 1600px;
+        margin: 2rem auto;
+        padding: 1rem;
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+    }
+
+    .watchlist-sidebar {
+        width: 320px;
+        position: sticky;
+        top: 5rem;
+        height: fit-content;
+        max-height: calc(100vh - 6rem);
+        overflow-y: auto;
+        flex-shrink: 0;
+    }
+
+    .watchlist-card {
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        transition: background-color 0.3s ease;
+    }
+
+    .watchlist-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .watchlist-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--foreground);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .watchlist-count {
+        background-color: var(--primary);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .watchlist-items {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .watchlist-item {
+        padding: 1rem;
+        background-color: var(--muted);
+        border-radius: 8px;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .watchlist-item:hover {
+        border-color: var(--primary);
+        box-shadow: 0 2px 8px rgba(0, 151, 251, 0.2);
+    }
+
+    .watchlist-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .watchlist-symbol {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--foreground);
+    }
+
+    .watchlist-remove {
+        background: none;
+        border: none;
+        color: var(--neutral);
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .watchlist-remove:hover {
+        color: var(--accent);
+        background-color: rgba(200, 16, 46, 0.1);
+    }
+
+    .watchlist-metrics {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.875rem;
+    }
+
+    .watchlist-metric {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .metric-label {
+        color: var(--neutral);
+        font-size: 0.75rem;
+    }
+
+    .metric-value {
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    .watchlist-news-count {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.75rem;
+        color: var(--neutral);
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .watchlist-empty {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--neutral);
+    }
+
+    .watchlist-empty i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+
+    .watchlist-empty p {
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .page-header p {
+        color: var(--neutral);
+        font-size: 1.1rem;
+    }
+
+    .controls-section {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .search-filter-group {
+        display: flex;
+        gap: 1rem;
+        flex: 1;
+        flex-wrap: wrap;
+    }
+
+    .news-search-bar {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+    }
+
+    .news-search-bar input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        background-color: var(--card-bg);
+        color: var(--foreground);
+    }
+
+    .news-search-bar i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--neutral);
+    }
+
+    .news-search-bar input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 151, 251, 0.1);
+    }
+
+    .filter-dropdown {
+        min-width: 200px;
+    }
+
+    .filter-dropdown select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        background-color: var(--card-bg);
+        color: var(--foreground);
+        cursor: pointer;
+    }
+
+    .filter-dropdown select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 151, 251, 0.1);
+    }
+
+    .refresh-btn {
+        padding: 0.75rem 1.5rem;
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .refresh-btn:hover {
+        background-color: #0076c9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 151, 251, 0.3);
+    }
+
+    .refresh-btn.loading i {
+        animation: spin 1s linear infinite;
+    }
+
+    .loading-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 4rem 0;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .spinner {
+        border: 4px solid var(--border);
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+        color: var(--neutral);
+        font-size: 1.1rem;
+    }
+
+    .news-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .news-card {
+        background-color: var(--card-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        border: 2px solid transparent;
+        padding: 0;
+        min-height: auto;
+    }
+
+    .news-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary);
+    }
+
+    .news-card-header {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        gap: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .news-logo {
+        width: 50px;
+        height: 50px;
+        background-color: white;
+        border-radius: 8px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .news-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .news-header-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .news-symbol {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: var(--foreground);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .trend-indicator {
+        font-size: 1.2rem;
+    }
+
+    .trend-indicator.bullish, .trend-indicator.up {
+        color: var(--success);
+    }
+
+    .trend-indicator.bearish, .trend-indicator.down {
+        color: var(--danger);
+    }
+
+    .trend-indicator.neutral {
+        color: var(--neutral);
+    }
+
+    .news-date {
+        font-size: 0.85rem;
+        color: var(--neutral);
+        margin-top: 0.25rem;
+    }
+
+    .news-content {
+        padding: 1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .news-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+        color: var(--foreground);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .news-description {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--neutral);
+        flex: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .news-footer {
+        padding: 1rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        background-color: var(--muted);
+    }
+
+    .news-footer-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .news-source {
+        font-size: 0.85rem;
+        color: var(--neutral);
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .read-more {
+        font-size: 0.875rem;
+        color: var(--primary);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .watchlist-btn {
+        padding: 0.5rem 1rem;
+        background-color: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        transition: all 0.2s ease;
+    }
+
+    .watchlist-btn:hover {
+        background-color: var(--primary);
+        color: white;
+    }
+
+    .watchlist-btn.added {
+        background-color: var(--success);
+        border-color: var(--success);
+        color: white;
+    }
+
+    .watchlist-btn.added:hover {
+        background-color: var(--danger);
+        border-color: var(--danger);
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .pagination button {
+        padding: 0.5rem 1rem;
+        border: 2px solid var(--border);
+        background-color: var(--card-bg);
+        color: var(--foreground);
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .pagination button:hover:not(:disabled) {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .pagination button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .page-info {
+        padding: 0.5rem 1rem;
+        color: var(--neutral);
+        font-weight: 500;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--neutral);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--foreground);
+    }
+
+    .empty-state p {
+        color: var(--neutral);
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 1200px) {
+        .news-page-container {
+            flex-direction: column;
+        }
+
+        .watchlist-sidebar {
+            width: 100%;
+            position: static;
+            max-height: none;
+            order: -1;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .news-container {
+            grid-template-columns: 1fr;
+        }
+
+        .controls-section {
+            flex-direction: column;
+        }
+
+        .search-filter-group {
+            width: 100%;
+        }
+
+        .refresh-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+        }
+
+        .news-footer {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.75rem;
+        }
+
+        .watchlist-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block flash %}{% endblock %}
+
+{% block content %}
+<div class="news-page-container">
+    <div class="main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-newspaper"></i> Live Stock News</h1>
+            <p>Stay updated with the latest market news and trends</p>
+        </div>
+
+        <div class="controls-section">
+            <div class="search-filter-group">
+                <div class="news-search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search news by title or description...">
+                </div>
+
+                <div class="filter-dropdown">
+                    <select id="symbolFilter">
+                        <option value="">All Stocks</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="refresh-btn" onclick="refreshNews()">
+                <i class="fas fa-sync-alt"></i>
+                Refresh News
+            </button>
+        </div>
+
+        <div id="loadingContainer" class="loading-container">
+            <div class="spinner"></div>
+            <div class="loading-text">Loading latest news...</div>
+        </div>
+
+        <div id="newsContainer" class="news-container" style="display: none;"></div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="fas fa-newspaper"></i>
+            <h3>No News Found</h3>
+            <p>Try adjusting your search or filter criteria</p>
+        </div>
+
+        <div id="paginationContainer" class="pagination" style="display: none;"></div>
+    </div>
+
+    <aside class="watchlist-sidebar">
+        <div class="watchlist-card">
+            <div class="watchlist-header">
+                <div class="watchlist-title">
+                    <i class="fas fa-star"></i>
+                    My Watchlist
+                    <span class="watchlist-count" id="watchlistCount">0</span>
+                </div>
+            </div>
+            <div id="watchlistItems" class="watchlist-items">
+                <div class="watchlist-empty">
+                    <i class="far fa-star"></i>
+                    <p>Add stocks to your watchlist to monitor them here</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function getTheme() {
+        try {
+            return localStorage.getItem('theme') || 'light';
+        } catch (e) {
+            return 'light';
+        }
+    }
+
+    const currentTheme = getTheme();
+    if (currentTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    let allNews = [];
+    let filteredNews = [];
+    let currentPage = 1;
+    const itemsPerPage = 12;
+    let watchlist = [];
+
+    function loadWatchlist() {
+        try {
+            const saved = localStorage.getItem('watchlist');
+            watchlist = saved ? JSON.parse(saved) : [];
+            renderWatchlist();
+        } catch (e) {
+            watchlist = [];
+        }
+    }
+
+    function saveWatchlist() {
+        try {
+            localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        } catch (e) {}
+    }
+
+    function toggleWatchlist(symbol, article) {
+        const index = watchlist.findIndex(item => item.symbol === symbol);
+        if (index > -1) {
+            watchlist.splice(index, 1);
+        } else {
+            watchlist.push({
+                symbol: symbol,
+                logo: article.logo,
+                addedAt: new Date().toISOString()
+            });
+        }
+        saveWatchlist();
+        renderWatchlist();
+        renderNews();
+    }
+
+    function renderWatchlist() {
+        const container = document.getElementById('watchlistItems');
+        const count = document.getElementById('watchlistCount');
+        count.textContent = watchlist.length;
+
+        if (watchlist.length === 0) {
+            container.innerHTML = `
+                <div class="watchlist-empty">
+                    <i class="far fa-star"></i>
+                    <p>Add stocks to your watchlist to monitor them here</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = '';
+        watchlist.forEach(item => {
+            const newsForSymbol = allNews.filter(n => n.symbol === item.symbol);
+            const latestNews = newsForSymbol[0];
+
+            const watchlistItem = document.createElement('div');
+            watchlistItem.className = 'watchlist-item';
+            watchlistItem.onclick = () => {
+                document.getElementById('symbolFilter').value = item.symbol;
+                fetchNews();
+            };
+
+            let metricsHTML = '<div class="watchlist-metrics"><span class="metric-label">Loading...</span></div>';
+
+            if (latestNews) {
+                const trendClass = latestNews.trend === 'bullish' ? 'positive' : latestNews.trend === 'bearish' ? 'negative' : '';
+                const trendIcon = latestNews.trend_icon || '-';
+
+                metricsHTML = `
+                    <div class="watchlist-metrics">
+                        <div class="watchlist-metric">
+                            <span class="metric-label">Trend</span>
+                            <span class="metric-value ${trendClass}">${trendIcon}</span>
+                        </div>
+                    </div>
+                    <div class="watchlist-news-count">
+                        <i class="fas fa-newspaper"></i>
+                        ${newsForSymbol.length} news article${newsForSymbol.length !== 1 ? 's' : ''}
+                    </div>
+                `;
+            }
+
+            watchlistItem.innerHTML = `
+                <div class="watchlist-item-header">
+                    <span class="watchlist-symbol">${item.symbol}</span>
+                    <button class="watchlist-remove" onclick="event.stopPropagation(); toggleWatchlist('${item.symbol}', {})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                ${metricsHTML}
+            `;
+
+            container.appendChild(watchlistItem);
+        });
+    }
+
+    async function loadSymbols() {
+        try {
+            const response = await fetch('/api/symbols');
+            const data = await response.json();
+
+            const select = document.getElementById('symbolFilter');
+            data.symbols.forEach(symbol => {
+                const option = document.createElement('option');
+                option.value = symbol;
+                option.textContent = symbol;
+                select.appendChild(option);
+            });
+        } catch (error) {}
+    }
+
+    async function fetchNews() {
+        const loadingContainer = document.getElementById('loadingContainer');
+        const newsContainer = document.getElementById('newsContainer');
+        const emptyState = document.getElementById('emptyState');
+        const paginationContainer = document.getElementById('paginationContainer');
+
+        loadingContainer.style.display = 'flex';
+        newsContainer.style.display = 'none';
+        emptyState.style.display = 'none';
+        paginationContainer.style.display = 'none';
+
+        try {
+            const filterSymbol = document.getElementById('symbolFilter').value;
+            const url = filterSymbol ? `/api/news?symbol=${filterSymbol}` : '/api/news?per_page=50';
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            allNews = data.news || [];
+            filteredNews = [...allNews];
+            currentPage = 1;
+
+            loadingContainer.style.display = 'none';
+
+            if (filteredNews.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                newsContainer.style.display = 'grid';
+                renderNews();
+                renderPagination();
+            }
+
+            renderWatchlist();
+        } catch (error) {
+            loadingContainer.style.display = 'none';
+            emptyState.style.display = 'block';
+        }
+    }
+
+    function renderNews() {
+        const newsContainer = document.getElementById('newsContainer');
+        newsContainer.innerHTML = '';
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageNews = filteredNews.slice(start, end);
+
+        pageNews.forEach(article => {
+            const card = createNewsCard(article);
+            newsContainer.appendChild(card);
+        });
+    }
+
+    function createNewsCard(article) {
+        const card = document.createElement('div');
+        card.className = 'news-card';
+
+        const trendClass = article.trend || 'neutral';
+        const isInWatchlist = watchlist.some(item => item.symbol === article.symbol);
+
+        card.innerHTML = `
+            <div class="news-card-header">
+                <div class="news-logo">
+                    <img src="${article.logo}" alt="${article.symbol}" onerror="this.src='https://via.placeholder.com/50'">
+                </div>
+                <div class="news-header-info">
+                    <div class="news-symbol">
+                        ${article.symbol}
+                        <span class="trend-indicator ${trendClass}">${article.trend_icon || '-'}</span>
+                    </div>
+                    <div class="news-date">
+                        <i class="far fa-clock"></i> ${formatDate(article.date)}
+                    </div>
+                </div>
+            </div>
+            <div class="news-content">
+                <h3 class="news-title">${article.title}</h3>
+                <p class="news-description">${article.description}</p>
+            </div>
+            <div class="news-footer">
+                <div class="news-footer-left">
+                    <span class="news-source">
+                        <i class="fas fa-rss"></i>
+                        ${article.source}
+                    </span>
+                    <span class="read-more">
+                        Read More <i class="fas fa-arrow-right"></i>
+                    </span>
+                </div>
+                <button class="watchlist-btn ${isInWatchlist ? 'added' : ''}" data-symbol="${article.symbol}">
+                    <i class="fas ${isInWatchlist ? 'fa-check' : 'fa-plus'}"></i>
+                    ${isInWatchlist ? 'Added' : 'Watch'}
+                </button>
+            </div>
+        `;
+
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.watchlist-btn')) {
+                window.open(article.link, '_blank');
+            }
+        });
+
+        const watchlistBtn = card.querySelector('.watchlist-btn');
+        watchlistBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleWatchlist(article.symbol, article);
+        });
+
+        return card;
+    }
+
+    function formatDate(dateString) {
+        const now = new Date();
+        const date = new Date(dateString);
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 60) {
+            return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+        } else if (diffHours < 24) {
+            return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+        } else if (diffDays < 7) {
+            return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+        } else {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+    }
+
+    function renderPagination() {
+        const paginationContainer = document.getElementById('paginationContainer');
+        paginationContainer.innerHTML = '';
+
+        const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
+
+        if (totalPages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        paginationContainer.style.display = 'flex';
+
+        const prevBtn = document.createElement('button');
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderNews();
+                renderPagination();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+        paginationContainer.appendChild(prevBtn);
+
+        const pageInfo = document.createElement('div');
+        pageInfo.className = 'page-info';
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        paginationContainer.appendChild(pageInfo);
+
+        const nextBtn = document.createElement('button');
+        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderNews();
+                renderPagination();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+        paginationContainer.appendChild(nextBtn);
+    }
+
+    function filterNews() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+        filteredNews = allNews.filter(article => {
+            const titleMatch = article.title.toLowerCase().includes(searchTerm);
+            const descMatch = article.description.toLowerCase().includes(searchTerm);
+            const symbolMatch = article.symbol.toLowerCase().includes(searchTerm);
+            return titleMatch || descMatch || symbolMatch;
+        });
+
+        currentPage = 1;
+
+        const newsContainer = document.getElementById('newsContainer');
+        const emptyState = document.getElementById('emptyState');
+        const paginationContainer = document.getElementById('paginationContainer');
+
+        if (filteredNews.length === 0) {
+            newsContainer.style.display = 'none';
+            emptyState.style.display = 'block';
+            paginationContainer.style.display = 'none';
+        } else {
+            newsContainer.style.display = 'grid';
+            emptyState.style.display = 'none';
+            renderNews();
+            renderPagination();
+        }
+    }
+
+    function refreshNews() {
+        const btn = document.querySelector('.refresh-btn');
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        fetchNews().finally(() => {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+        });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', filterNews);
+    document.getElementById('symbolFilter').addEventListener('change', fetchNews);
+
+    loadWatchlist();
+    loadSymbols();
+    fetchNews();
+
+    setInterval(fetchNews, 300000);
+</script>
+{% endblock %}
