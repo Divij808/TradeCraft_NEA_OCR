@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% block title %}Portfolio - TradeCraft{% endblock %}
+
+{% set active_page = 'portfolio' %}
+
+{% block content %}
+<div class="portfolio-summary">
+  <table>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Account Balance</td>
+        <td class="amount">{{ account_balance }}</td>
+      </tr>
+      <tr>
+        <td>Stocks Value</td>
+        <td class="amount">{{ stock_value }}</td>
+      </tr>
+      <tr>
+        <td>Net Worth</td>
+        <td class="amount">{{ net_worth }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="container">
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search Stock..." onkeyup="filterStock()">
+  </div>
+
+  <div class="Stock-container" id="StockContainer"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function getTheme() {
+    try {
+      return localStorage.getItem('theme') || 'light';
+    } catch (e) {
+      return 'light';
+    }
+  }
+
+  const currentTheme = getTheme();
+  if (currentTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+  const StockData = {{ Stock | tojson }};
+  const StockContainer = document.getElementById('StockContainer');
+
+  function renderStock(data) {
+    StockContainer.innerHTML = '';
+    data.forEach(Stock => {
+      const StockCard = `
+        <div class="Stock-card">
+          <div class="Stock-logo">
+            <img src="${Stock.logo}" alt="${Stock.title}">
+          </div>
+          <div class="Stock-content">
+            <h2 class="Stock-title">${Stock.title}</h2>
+            <p class="Stock-description">${Stock.description}</p>
+          </div>
+        </div>
+      `;
+      StockContainer.innerHTML += StockCard;
+    });
+  }
+
+  function filterStock() {
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const filteredStock = StockData.filter(Stock =>
+      Stock.title.toLowerCase().includes(searchInput) ||
+      Stock.description.toLowerCase().includes(searchInput)
+    );
+    renderStock(filteredStock);
+  }
+
+  renderStock(StockData);
+</script>
+{% endblock %}
