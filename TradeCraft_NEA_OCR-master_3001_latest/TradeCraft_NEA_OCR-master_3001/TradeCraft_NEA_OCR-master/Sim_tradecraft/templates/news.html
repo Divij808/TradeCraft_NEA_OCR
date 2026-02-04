@@ -1,0 +1,429 @@
+{% extends "layout.html" %}
+<!-- News dashboard template -->
+{% block title %}Live Stock News - TradeCraft{% endblock %}
+
+{% set active_page = 'news' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block flash %}{% endblock %}
+
+{% block content %}
+<div class="news-page-container">
+    <div class="main-content">
+        <div class="page-header">
+            <h1><i class="fas fa-newspaper"></i> Live Stock News</h1>
+            <p>Stay updated with the latest market news and trends</p>
+        </div>
+
+        <div class="controls-section">
+            <div class="search-filter-group">
+                <div class="news-search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search news by title or description...">
+                </div>
+
+                <div class="filter-dropdown">
+                    <select id="symbolFilter">
+                        <option value="">All Stocks</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="refresh-btn" onclick="refreshNews()">
+                <i class="fas fa-sync-alt"></i>
+                Refresh News
+            </button>
+        </div>
+
+        <div id="loadingContainer" class="loading-container">
+            <div class="spinner"></div>
+            <div class="loading-text">Loading latest news...</div>
+        </div>
+
+        <div id="newsContainer" class="news-container" style="display: none;"></div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="fas fa-newspaper"></i>
+            <h3>No News Found</h3>
+            <p>Try adjusting your search or filter criteria</p>
+        </div>
+
+        <div id="paginationContainer" class="pagination" style="display: none;"></div>
+    </div>
+
+    <aside class="watchlist-sidebar">
+        <div class="watchlist-card">
+            <div class="watchlist-header">
+                <div class="watchlist-title">
+                    <i class="fas fa-star"></i>
+                    My Watchlist
+                    <span class="watchlist-count" id="watchlistCount">0</span>
+                </div>
+            </div>
+            <div id="watchlistItems" class="watchlist-items">
+                <div class="watchlist-empty">
+                    <i class="far fa-star"></i>
+                    <p>Add stocks to your watchlist to monitor them here</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function getTheme() {
+        try {
+            return localStorage.getItem('theme') || 'light';
+        } catch (e) {
+            return 'light';
+        }
+    }
+
+    const currentTheme = getTheme();
+    if (currentTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    let allNews = [];
+    let filteredNews = [];
+    let currentPage = 1;
+    const itemsPerPage = 12;
+    let watchlist = [];
+
+    function loadWatchlist() {
+        try {
+            const saved = localStorage.getItem('watchlist');
+            watchlist = saved ? JSON.parse(saved) : [];
+            renderWatchlist();
+        } catch (e) {
+            watchlist = [];
+        }
+    }
+
+    function saveWatchlist() {
+        try {
+            localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        } catch (e) {}
+    }
+
+    function toggleWatchlist(symbol, article) {
+        const index = watchlist.findIndex(item => item.symbol === symbol);
+        if (index > -1) {
+            watchlist.splice(index, 1);
+        } else {
+            watchlist.push({
+                symbol: symbol,
+                logo: article.logo,
+                addedAt: new Date().toISOString()
+            });
+        }
+        saveWatchlist();
+        renderWatchlist();
+        renderNews();
+    }
+
+    function renderWatchlist() {
+        const container = document.getElementById('watchlistItems');
+        const count = document.getElementById('watchlistCount');
+        count.textContent = watchlist.length;
+
+        if (watchlist.length === 0) {
+            container.innerHTML = `
+                <div class="watchlist-empty">
+                    <i class="far fa-star"></i>
+                    <p>Add stocks to your watchlist to monitor them here</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = '';
+        watchlist.forEach(item => {
+            const newsForSymbol = allNews.filter(n => n.symbol === item.symbol);
+            const latestNews = newsForSymbol[0];
+
+            const watchlistItem = document.createElement('div');
+            watchlistItem.className = 'watchlist-item';
+            watchlistItem.onclick = () => {
+                document.getElementById('symbolFilter').value = item.symbol;
+                fetchNews();
+            };
+
+            let metricsHTML = '<div class="watchlist-metrics"><span class="metric-label">Loading...</span></div>';
+
+            if (latestNews) {
+                const trendClass = latestNews.trend === 'bullish' ? 'positive' : latestNews.trend === 'bearish' ? 'negative' : '';
+                const trendIcon = latestNews.trend_icon || '-';
+
+                metricsHTML = `
+                    <div class="watchlist-metrics">
+                        <div class="watchlist-metric">
+                            <span class="metric-label">Trend</span>
+                            <span class="metric-value ${trendClass}">${trendIcon}</span>
+                        </div>
+                    </div>
+                    <div class="watchlist-news-count">
+                        <i class="fas fa-newspaper"></i>
+                        ${newsForSymbol.length} news article${newsForSymbol.length !== 1 ? 's' : ''}
+                    </div>
+                `;
+            }
+
+            watchlistItem.innerHTML = `
+                <div class="watchlist-item-header">
+                    <span class="watchlist-symbol">${item.symbol}</span>
+                    <button class="watchlist-remove" onclick="event.stopPropagation(); toggleWatchlist('${item.symbol}', {})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                ${metricsHTML}
+            `;
+
+            container.appendChild(watchlistItem);
+        });
+    }
+
+    async function loadSymbols() {
+        try {
+            const response = await fetch('/api/symbols');
+            const data = await response.json();
+
+            const select = document.getElementById('symbolFilter');
+            data.symbols.forEach(symbol => {
+                const option = document.createElement('option');
+                option.value = symbol;
+                option.textContent = symbol;
+                select.appendChild(option);
+            });
+        } catch (error) {}
+    }
+
+    async function fetchNews() {
+        const loadingContainer = document.getElementById('loadingContainer');
+        const newsContainer = document.getElementById('newsContainer');
+        const emptyState = document.getElementById('emptyState');
+        const paginationContainer = document.getElementById('paginationContainer');
+
+        loadingContainer.style.display = 'flex';
+        newsContainer.style.display = 'none';
+        emptyState.style.display = 'none';
+        paginationContainer.style.display = 'none';
+
+        try {
+            const filterSymbol = document.getElementById('symbolFilter').value;
+            const url = filterSymbol ? `/api/news?symbol=${filterSymbol}` : '/api/news?per_page=50';
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            allNews = data.news || [];
+            filteredNews = [...allNews];
+            currentPage = 1;
+
+            loadingContainer.style.display = 'none';
+
+            if (filteredNews.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                newsContainer.style.display = 'grid';
+                renderNews();
+                renderPagination();
+            }
+
+            renderWatchlist();
+        } catch (error) {
+            loadingContainer.style.display = 'none';
+            emptyState.style.display = 'block';
+        }
+    }
+
+    function renderNews() {
+        const newsContainer = document.getElementById('newsContainer');
+        newsContainer.innerHTML = '';
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageNews = filteredNews.slice(start, end);
+
+        pageNews.forEach(article => {
+            const card = createNewsCard(article);
+            newsContainer.appendChild(card);
+        });
+    }
+
+    function createNewsCard(article) {
+        const card = document.createElement('div');
+        card.className = 'news-card';
+
+        const trendClass = article.trend || 'neutral';
+        const isInWatchlist = watchlist.some(item => item.symbol === article.symbol);
+
+        card.innerHTML = `
+            <div class="news-card-header">
+                <div class="news-logo">
+                    <img src="${article.logo}" alt="${article.symbol}" onerror="this.src='https://via.placeholder.com/50'">
+                </div>
+                <div class="news-header-info">
+                    <div class="news-symbol">
+                        ${article.symbol}
+                        <span class="trend-indicator ${trendClass}">${article.trend_icon || '-'}</span>
+                    </div>
+                    <div class="news-date">
+                        <i class="far fa-clock"></i> ${formatDate(article.date)}
+                    </div>
+                </div>
+            </div>
+            <div class="news-content">
+                <h3 class="news-title">${article.title}</h3>
+                <p class="news-description">${article.description}</p>
+            </div>
+            <div class="news-footer">
+                <div class="news-footer-left">
+                    <span class="news-source">
+                        <i class="fas fa-rss"></i>
+                        ${article.source}
+                    </span>
+                    <span class="read-more">
+                        Read More <i class="fas fa-arrow-right"></i>
+                    </span>
+                </div>
+                <button class="watchlist-btn ${isInWatchlist ? 'added' : ''}" data-symbol="${article.symbol}">
+                    <i class="fas ${isInWatchlist ? 'fa-check' : 'fa-plus'}"></i>
+                    ${isInWatchlist ? 'Added' : 'Watch'}
+                </button>
+            </div>
+        `;
+
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.watchlist-btn')) {
+                window.open(article.link, '_blank');
+            }
+        });
+
+        const watchlistBtn = card.querySelector('.watchlist-btn');
+        watchlistBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleWatchlist(article.symbol, article);
+        });
+
+        return card;
+    }
+
+    function formatDate(dateString) {
+        const now = new Date();
+        const date = new Date(dateString);
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 60) {
+            return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+        } else if (diffHours < 24) {
+            return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+        } else if (diffDays < 7) {
+            return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+        } else {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+    }
+
+    function renderPagination() {
+        const paginationContainer = document.getElementById('paginationContainer');
+        paginationContainer.innerHTML = '';
+
+        const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
+
+        if (totalPages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        paginationContainer.style.display = 'flex';
+
+        const prevBtn = document.createElement('button');
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderNews();
+                renderPagination();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+        paginationContainer.appendChild(prevBtn);
+
+        const pageInfo = document.createElement('div');
+        pageInfo.className = 'page-info';
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        paginationContainer.appendChild(pageInfo);
+
+        const nextBtn = document.createElement('button');
+        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderNews();
+                renderPagination();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+        paginationContainer.appendChild(nextBtn);
+    }
+
+    function filterNews() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+        filteredNews = allNews.filter(article => {
+            const titleMatch = article.title.toLowerCase().includes(searchTerm);
+            const descMatch = article.description.toLowerCase().includes(searchTerm);
+            const symbolMatch = article.symbol.toLowerCase().includes(searchTerm);
+            return titleMatch || descMatch || symbolMatch;
+        });
+
+        currentPage = 1;
+
+        const newsContainer = document.getElementById('newsContainer');
+        const emptyState = document.getElementById('emptyState');
+        const paginationContainer = document.getElementById('paginationContainer');
+
+        if (filteredNews.length === 0) {
+            newsContainer.style.display = 'none';
+            emptyState.style.display = 'block';
+            paginationContainer.style.display = 'none';
+        } else {
+            newsContainer.style.display = 'grid';
+            emptyState.style.display = 'none';
+            renderNews();
+            renderPagination();
+        }
+    }
+
+    function refreshNews() {
+        const btn = document.querySelector('.refresh-btn');
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        fetchNews().finally(() => {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+        });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', filterNews);
+    document.getElementById('symbolFilter').addEventListener('change', fetchNews);
+
+    loadWatchlist();
+    loadSymbols();
+    fetchNews();
+
+    setInterval(fetchNews, 300000);
+</script>
+{% endblock %}

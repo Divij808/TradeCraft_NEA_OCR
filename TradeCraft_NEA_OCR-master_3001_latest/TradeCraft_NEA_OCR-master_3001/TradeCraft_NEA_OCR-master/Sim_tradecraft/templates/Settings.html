@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+<!-- User settings template for theme preferences -->
+{% block title %}Settings - TradeCraft{% endblock %}
+
+{% block flash %}
+<div class="flash-messages">
+  <div class="alert alert-success" style="display: none;" id="theme-alert">
+    Theme updated successfully!
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card">
+    <h1>Settings</h1>
+
+    <div class="theme-toggle-container">
+      <div class="theme-toggle-label">
+        <i class="fas fa-moon"></i>
+        <span>Dark Mode</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="darkModeToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  const themeAlert = document.getElementById('theme-alert');
+  const htmlElement = document.documentElement;
+
+  function getTheme() {
+    try {
+      return localStorage.getItem('theme') || 'light';
+    } catch (e) {
+      return 'light';
+    }
+  }
+
+  function saveTheme(theme) {
+    try {
+      localStorage.setItem('theme', theme);
+    } catch (e) {
+      console.log('Unable to save theme preference');
+    }
+  }
+
+  function showAlert() {
+    themeAlert.style.display = 'block';
+    setTimeout(() => {
+      themeAlert.style.display = 'none';
+    }, 3000);
+  }
+
+  const currentTheme = getTheme();
+  if (currentTheme === 'dark') {
+    htmlElement.setAttribute('data-theme', 'dark');
+    darkModeToggle.checked = true;
+  }
+
+  darkModeToggle.addEventListener('change', function() {
+    if (this.checked) {
+      htmlElement.setAttribute('data-theme', 'dark');
+      saveTheme('dark');
+      showAlert();
+    } else {
+      htmlElement.removeAttribute('data-theme');
+      saveTheme('light');
+      showAlert();
+    }
+  });
+</script>
+{% endblock %}

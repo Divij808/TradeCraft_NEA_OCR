@@ -1,0 +1,225 @@
+{% extends "layout.html" %}
+<!-- Trade entry and transaction history template -->
+{% block title %}Trade - TradeCraft{% endblock %}
+
+{% set active_page = 'trade' %}
+
+{% block content %}
+<div class="container">
+  <div class="card" style="max-width: 100%;">
+    <h1><i class="fas fa-chart-line"></i> Place Trade</h1>
+    <form id="tradeForm" method="POST" action="{{ url_for('trade') }}" class="grid">
+      <div>
+        <label for="symbol"><i class="fas fa-building"></i> Stock Symbol</label>
+        <input name="symbol" id="symbol" list="stock-options" placeholder="Enter or select a symbol" required>
+        <datalist id="stock-options">
+          <option value="AAPL">Apple Inc.</option>
+          <option value="GOOGL">Alphabet Inc. (Google)</option>
+          <option value="AMZN">Amazon.com Inc.</option>
+          <option value="MSFT">Microsoft Corporation</option>
+          <option value="TSLA">Tesla Inc.</option>
+          <option value="META">Meta Platforms Inc.</option>
+          <option value="NVDA">NVIDIA Corporation</option>
+          <option value="JPM">JPMorgan Chase & Co.</option>
+          <option value="V">Visa Inc.</option>
+          <option value="WMT">Walmart Inc.</option>
+        </datalist>
+      </div>
+      <div>
+        <label for="qty"><i class="fas fa-sort-numeric-up"></i> Quantity</label>
+        <input name="qty" id="qty" type="number" min="1" step="1" placeholder="Number of shares" required>
+      </div>
+      <div>
+        <label for="side"><i class="fas fa-exchange-alt"></i> Transaction Type</label>
+        <select name="side" id="side" required>
+          <option value="BUY">Buy</option>
+          <option value="SELL">Sell</option>
+        </select>
+      </div>
+      <button type="button" id="submitTradeBtn" onclick="showTradeConfirmation()" style="grid-column: 1 / -1;">
+        <i class="fas fa-check-circle"></i> Submit Trade
+      </button>
+    </form>
+  </div>
+
+  <div class="card" style="max-width: 100%;">
+    <h2 style="text-align: center; color: var(--accent); margin-bottom: 1.5rem;"><i class="fas fa-history"></i> Recent Transactions</h2>
+    {% if data and data|length > 0 %}
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              {% for header in headings %}
+                <th>{{ header }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in data %}
+              <tr>
+                {% for cell in row %}
+                  <td>{{ cell }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="no-data">
+        <i class="fas fa-inbox" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+        <p>No transactions yet. Place your first trade above!</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<div id="tradeConfirmationModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Confirm Trade Details</h2>
+      <span class="close" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p>Please review the details of your trade before confirming:</p>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Transaction Type:</span>
+        <span class="confirmation-value" id="modalSide"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Stock Symbol:</span>
+        <span class="confirmation-value" id="modalSymbol"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Quantity:</span>
+        <span class="confirmation-value" id="modalQty"></span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Estimated Price:</span>
+        <span class="confirmation-value" id="modalPrice">Loading...</span>
+      </div>
+      <div class="confirmation-item">
+        <span class="confirmation-label">Estimated Total:</span>
+        <span class="confirmation-value" id="modalTotal">Loading...</span>
+      </div>
+    </div>
+    <div class="modal-footer" id="modalFooter">
+      <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button type="button" class="btn-confirm" id="confirmTradeBtn" onclick="submitTrade()">Confirm Trade</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function getTheme() {
+    try {
+      return localStorage.getItem('theme') || 'light';
+    } catch (e) {
+      return 'light';
+    }
+  }
+
+  const currentTheme = getTheme();
+  if (currentTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+  const modal = document.getElementById('tradeConfirmationModal');
+  const tradeForm = document.getElementById('tradeForm');
+  const confirmBtn = document.getElementById('confirmTradeBtn');
+  const submitBtn = document.getElementById('submitTradeBtn');
+  const modalFooter = document.getElementById('modalFooter');
+
+  function closeModal() {
+    modal.style.display = 'none';
+    modalFooter.classList.remove('sell-action');
+    confirmBtn.disabled = false;
+    confirmBtn.innerHTML = 'Confirm Trade';
+  }
+
+  async function showTradeConfirmation() {
+    if (!tradeForm.checkValidity()) {
+      tradeForm.reportValidity();
+      return;
+    }
+
+    const symbol = document.getElementById('symbol').value.toUpperCase().trim();
+    const qty = parseInt(document.getElementById('qty').value);
+    const side = document.getElementById('side').value;
+
+    if (!symbol || !qty || qty <= 0) {
+      alert('Please fill in all fields correctly.');
+      return;
+    }
+
+    const transactionType = side === 'BUY' ? 'BUY' : 'SELL';
+
+    document.getElementById('modalSymbol').textContent = symbol;
+    document.getElementById('modalQty').textContent = qty;
+    document.getElementById('modalSide').textContent = transactionType;
+    document.getElementById('modalPrice').textContent = 'Loading...';
+    document.getElementById('modalTotal').textContent = 'Loading...';
+
+    if (side === 'SELL') {
+      modalFooter.classList.add('sell-action');
+      document.getElementById('modalSide').style.color = 'var(--accent)';
+    } else {
+      modalFooter.classList.remove('sell-action');
+      document.getElementById('modalSide').style.color = 'var(--primary)';
+    }
+
+    modal.style.display = 'block';
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Loading...<span class="loading-spinner"></span>';
+
+    try {
+      const response = await fetch(`/api/stock-price/${symbol}`);
+      const data = await response.json();
+
+      if (data.success && data.price) {
+        const currentPrice = parseFloat(data.price);
+        const estimatedTotal = (currentPrice * qty).toFixed(2);
+
+        document.getElementById('modalPrice').textContent = `$${currentPrice.toFixed(2)}`;
+        document.getElementById('modalTotal').textContent = `$${estimatedTotal}`;
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Trade';
+      } else {
+        document.getElementById('modalPrice').textContent = 'Price unavailable';
+        document.getElementById('modalTotal').textContent = 'N/A';
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Trade';
+
+        alert('Unable to fetch current price for ' + symbol + '. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error fetching stock price:', error);
+      document.getElementById('modalPrice').textContent = 'Error loading price';
+      document.getElementById('modalTotal').textContent = 'N/A';
+
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Trade';
+
+      alert('Network error. Please check your connection and try again.');
+    }
+  }
+
+  function submitTrade() {
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = 'Processing...<span class="loading-spinner"></span>';
+    closeModal();
+    tradeForm.submit();
+  }
+
+  window.onclick = function(event) {
+    if (event.target === modal) {
+      closeModal();
+    }
+  }
+</script>
+{% endblock %}

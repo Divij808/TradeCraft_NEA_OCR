@@ -1,0 +1,33 @@
+<!-- Email check form used to request OTP delivery -->
+<!--linking  The css code-->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/credentials.css') }}">
+<div class="container auth-container">
+  <div class="logo-panel"></div>
+  <div class="form-panel">
+    <!-- Generating the flash messages-->
+    <div class="form-box">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages">
+            <!--for loop to load flash messages-->
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      <!-- headings for Sign In message-->
+      <h2>Sign In</h2>
+      <!-- form to  user details email. This also contains a button to submit the data-->
+      <form action="/email" method="POST">
+        <input type="email" name="email" placeholder="email" required>
+        <button type="submit">Login</button>
+      </form>
+      <!-- Form links to redirect to corresponding page-->
+      <p class="links">
+        Don't have an account? <a href="{{ url_for('signup') }}">Sign Up</a><br>
+        <a href="{{ url_for('forgot') }}">Forgot Password?</a>
+      </p>
+    </div>
+  </div>
+</div>
