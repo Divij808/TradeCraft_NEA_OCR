@@ -236,24 +236,24 @@ def trade():
         flash("Please log in first.", "error")
         return redirect(url_for('login'))
 
-    # Handle form submission
+    # Handle form submission for buy/sell requests.
     if request.method == 'POST':
         symbol_entered = (request.form.get('symbol') or '').upper().strip()
         side = (request.form.get('side') or 'BUY').upper()
         quantity_entered = int(request.form.get('qty') or '0')
 
+        # Apply balance updates and record the transaction.
         message = cash_update(quantity_entered, session['user_id'], side, symbol_entered)
         flash(message)
     # Fetch transactions for the logged-in user
     transactions = recent_transactions(session['user_id'])
-    # Display transaction history
-
+    # Display transaction history.
     headings = ("ID", "User ID", "Symbol", "Quantity", "Side", "Price", "Timestamp")
 
     return render_template('trade.html', headings=headings, data=transactions, current_price=transactions['live_price'])
 
 
-# NEW: API endpoint to get stock price
+# API endpoint to get stock price for a single symbol.
 @app.route('/api/stock-price/<symbol>')
 def get_stock_price(symbol):
     """API endpoint to fetch current stock price for a given symbol"""
@@ -268,7 +268,7 @@ def get_stock_price(symbol):
                 'error': 'Invalid stock symbol'
             }), 404
 
-        # Update prices and fetch the live price
+        # Fetch the live price from Yahoo Finance.
 
         price = yfinance.Ticker(symbol).info.get('currentPrice')
 
@@ -293,7 +293,7 @@ def get_stock_price(symbol):
 
 @app.route('/Portfolio', methods=['GET'])
 def portfolio():
-    # Ensure user is logged in
+    # Ensure user is logged in before accessing holdings.
     cost = 0.0
     if 'user_id' not in session:
         flash("Please log in first.", "error")
@@ -301,7 +301,7 @@ def portfolio():
 
     user_id = session['user_id']
 
-    # Fetch transactions for the logged-in user
+    # Fetch transactions for the logged-in user.
     totals = {}
     with sqlite3.connect('tradecraft.db') as conn:
         conn.row_factory = sqlite3.Row
@@ -309,7 +309,7 @@ def portfolio():
         cursor.execute("SELECT symbol, qty, side FROM transactions WHERE user_id= ?", (user_id,))
         rows = cursor.fetchall()
 
-    # Calculate net holdings per symbol
+    # Calculate net holdings per symbol.
     for row in rows:
         symbol = (row['symbol'] or '').upper().strip()
         try:
@@ -325,7 +325,7 @@ def portfolio():
             totals[symbol] = totals.get(symbol, 0) - qty
             cost = (qty * live_price(symbol)) - cost
 
-    # Build portfolio items and compute net worth
+    # Build portfolio items and compute net worth.
     holdings = []
     stock_value = 0.0
     for symbol, qty in totals.items():
@@ -348,7 +348,7 @@ def portfolio():
         })
         stock_value += price * qty
 
-    # Get user's cash balance
+    # Get user's cash balance.
     cash = 0.0
     with sqlite3.connect('tradecraft.db') as conn:
         conn.row_factory = sqlite3.Row
@@ -372,7 +372,7 @@ def portfolio():
 # News Page Route
 @app.route('/News')
 def news():
-    """Display news page - requires login"""
+    """Display news page - requires login."""
     if 'user_id' not in session:
         flash("Please log in first.", "error")
         return redirect(url_for('login'))
@@ -380,14 +380,14 @@ def news():
     return render_template('news.html')
 
 
-# API: Get symbols
+# API: Get symbols for client-side dropdowns.
 @app.route("/api/symbols")
 def get_symbols():
     symbols = load_companies_from_json()
     return jsonify({"symbols": symbols})
 
 
-# API: Get news
+# API: Get news articles, optionally filtered by symbol.
 @app.route("/api/news")
 def get_news():
     symbol = request.args.get("symbol")
@@ -399,7 +399,7 @@ def get_news():
         symbols = load_companies_from_json()
         news = fetch_all_stocks_news(symbols, articles_per_stock=3)
 
-    # Enrich data for frontend
+    # Enrich data for frontend display.
     for article in news:
         trend = get_stock_trend(article["symbol"])
         article["trend"] = trend
@@ -409,9 +409,9 @@ def get_news():
             "neutral": "➡️"
         }[trend]
         live_price = yfinance.Ticker(symbol).info.get('currentPrice')
-        # Fetch live price for the stock
+        # Fetch live price for the stock.
         article["live_price"] = live_price(article["symbol"])
-        # fetching and dispalying the logo of the stock
+        # Fetch the logo for the stock.
         article["logo"] = (
             company_image(article["symbol"])
         )
@@ -421,6 +421,7 @@ def get_news():
 
 @app.route('/logout')
 def logout():
+    # Clear session state and return to the landing page.
     session.clear()
     flash("You have been logged out.", "info")
     return redirect(url_for('home'))
@@ -428,6 +429,7 @@ def logout():
 
 @app.get('/api/quote')
 def api_quote():
+    # Return a quote map for one or more comma-separated symbols.
     symbols = (request.args.get('symbols') or '').upper().replace(' ', '')
     live_price = yfinance.Ticker(symbols).info.get('currentPrice')
     out = {}
@@ -442,6 +444,7 @@ def api_quote():
 
 @app.route('/rules')
 def rules():
+    # Serve rules image only to authenticated users.
     if 'user_id' not in session:
         flash("Please log in first.", "error")
         return redirect(url_for('login'))
@@ -458,7 +461,7 @@ def profile():
     user_id = session['user_id']
 
     if request.method == 'POST':
-        # Determine which form was submitted using the 'action' hidden field
+        # Determine which form was submitted using the 'action' hidden field.
         action_type = request.form.get('action')
 
         try:
@@ -500,7 +503,7 @@ def profile():
                         flash('Incorrect current password.', 'error')
 
                 elif action_type == 'delete_account':
-                    # Delete user transactions first to maintain referential integrity
+                    # Delete user transactions first to maintain referential integrity.
                     cursor.execute("DELETE FROM transactions WHERE user_id = ?", (user_id,))
                     cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
                     if cursor.rowcount > 0:
