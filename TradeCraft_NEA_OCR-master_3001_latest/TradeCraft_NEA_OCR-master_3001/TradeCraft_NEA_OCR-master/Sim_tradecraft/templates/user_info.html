@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+{% block title %}User Profile - TradeCraft{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+  <div class="card">
+    <h1><i class="fa fa-user-circle"></i> User Profile</h1>
+
+    <div class="section-title"><i class="fa fa-info-circle"></i> Current Information</div>
+    <div class="grid grid-2">
+      <div>
+        <label for="current-username-display">Current Username</label>
+        <input id="current-username-display" type="text" value="{{ username }}" readonly>
+      </div>
+      <div>
+        <label for="current-email-display">Current Email</label>
+        <input id="current-email-display" type="email" value="{{ email }}" readonly>
+      </div>
+    </div>
+
+    <hr />
+
+    <form method="POST" action="{{ url_for('profile') }}">
+      <input type="hidden" name="action" value="update_username">
+      <div class="section-title"><i class="fa fa-user"></i> Change Username</div>
+      <div class="grid">
+        <div>
+          <label for="new-username">New Username</label>
+          <input id="new-username" name="new-username" type="text" placeholder="Enter new username" autocomplete="username" required>
+          <p class="helper-text">Username must be 3-24 characters (letters, numbers, underscore only)</p>
+        </div>
+      </div>
+      <button type="submit"><i class="fa fa-save"></i> Update Username</button>
+    </form>
+
+    <hr />
+
+    <form method="POST" action="{{ url_for('profile') }}">
+      <input type="hidden" name="action" value="update_password">
+      <div class="section-title"><i class="fa fa-key"></i> Change Password</div>
+      <div class="grid grid-2">
+        <div>
+          <label for="current-password">Current Password</label>
+          <input id="current-password" name="current-password" type="password" placeholder="Enter current password" autocomplete="current-password" required>
+        </div>
+        <div>
+          <label for="new-password">New Password</label>
+          <input id="new-password" name="new-password" type="password" placeholder="Enter new password" autocomplete="new-password" required>
+        </div>
+      </div>
+      <button type="submit"><i class="fa fa-save"></i> Update Password</button>
+    </form>
+
+    <hr />
+
+    <form method="POST" action="{{ url_for('profile') }}">
+      <input type="hidden" name="action" value="update_email">
+      <div class="section-title"><i class="fa fa-envelope"></i> Change Email</div>
+      <div class="grid grid-2">
+        <div>
+          <label for="current-email">Current Email</label>
+          <input id="current-email" name="current-email" type="email" placeholder="Enter current email" autocomplete="email" required>
+        </div>
+        <div>
+          <label for="new-email">New Email</label>
+          <input id="new-email" name="new-email" type="email" placeholder="Enter new email" autocomplete="email" required>
+        </div>
+      </div>
+      <button type="submit"><i class="fa fa-save"></i> Update Email</button>
+    </form>
+
+    <hr />
+
+    <form method="POST" action="{{ url_for('profile') }}" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.');">
+      <input type="hidden" name="action" value="delete_account">
+      <div class="section-title"><i class="fa fa-exclamation-triangle"></i> Danger Zone</div>
+      <p class="helper-text" style="margin-bottom: 1rem;">Once you delete your account, there is no going back. Please be certain.</p>
+      <button type="submit" class="btn-danger"><i class="fa fa-trash-alt"></i> Delete My Account</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
