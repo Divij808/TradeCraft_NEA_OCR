@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+<!-- Rules page template -->
+{% block title %}Rules - TradeCraft{% endblock %}
+
+{% set active_page = 'rules' %}
+
+{% block body_attrs %}style="display: flex; flex-direction: column;"{% endblock %}
+
+{% block content %}
+<div class="rules-page">
+  <img src="{{ url_for('static', filename='rules.png') }}" alt="Game Rules">
+</div>
+{% endblock %}
