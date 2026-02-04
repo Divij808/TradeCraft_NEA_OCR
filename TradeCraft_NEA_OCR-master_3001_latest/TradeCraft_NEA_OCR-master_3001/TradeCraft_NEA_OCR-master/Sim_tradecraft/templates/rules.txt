@@ -1,7 +1,0 @@
-Everything you need to know to start trading
-Each new account starts with $100,000 in cash. Use it wisely to build your portfolio and grow your wealth
-Trading is instant at the current simulated market price. All orders are market orders for immediate execution
-No short selling or margin trading is allowed. You can only buy stocks with available cash in your account
-Prices are synthetic and change every minute with small random variations to simulate real market conditions
-Educational Purpose Only. This app is designed for education and practice. No real money is involved in any transactions
-
